@@ -1,3 +1,5 @@
+import '../synth/faust';
+
 import { get } from '@hungry-egg/rx-state';
 import {
   AppBar,
@@ -32,8 +34,8 @@ import {
   unsubscribeAudio,
 } from '../store';
 import { useUnwrap } from '../store/audio';
+import Synth from '../synth/binaural';
 import { mockMuseEEG } from '../utils/mockMuseEEG';
-
 export function EEG() {
   window.enableAux = true;
   window.nchans = 5;
@@ -48,17 +50,21 @@ export function EEG() {
 
   useEffect(() => {
     if (audioState === AUDIO_STATE.started) {
-      if (!contextStarted) {
-        createContext().then(() => {
-          bootstrapAudio();
+      if (1 === 0) {
+        if (!contextStarted) {
+          createContext().then(() => {
+            bootstrapAudio();
+            startNodes();
+            contextStarted$.set(true);
+          });
+        } else {
           startNodes();
-          contextStarted$.set(true);
-        });
-      } else {
-        startNodes();
+        }
       }
+      Synth.start();
     } else {
-      if (get(rightNodes)) {
+      Synth.stop();
+      if (get(rightNodes) && false) {
         stopNodes();
         unsubscribeAudio();
       }
@@ -185,7 +191,7 @@ export function EEG() {
                   paddingY: { xs: '2px', md: '4px' },
                 }}
                 onClick={() => {
-                  eegDebug$.set(true);
+                  eegDebug$.set(!eegDebug);
                 }}
               >
                 {!eegDebug ? 'Debug EEG' : 'Stop debug'}

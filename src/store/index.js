@@ -9,7 +9,6 @@ import {
   Oscillator,
   start,
   Synth,
-  Transport,
 } from 'tone';
 
 const LEFT_CHANNEL = -1;
@@ -27,6 +26,8 @@ const leftChannel = SynthChannel({
   modTypeAm: 'sine',
   modAmount: 14,
   modAmountAm: -10,
+  modRange: 7.51,
+  modRangeAm: 7.51,
   volume: 0,
   useAM: false,
   useFM: true,
@@ -41,6 +42,8 @@ const rightChannel = SynthChannel({
   modTypeAm: 'sine',
   modAmount: 14,
   modAmountAm: -10,
+  modRange: 7.51,
+  modRangeAm: 7.51,
   volume: 0,
   useAM: false,
   useFM: true,
@@ -67,7 +70,7 @@ const contextStarted$ = atom(false);
 const SpectraSettings = ({
   cutOffLow = 1,
   cutOffHigh = 35,
-  interval = 1000,
+  interval = 2000,
   bins = 256,
   sliceFFTLow = 1,
   sliceFFTHigh = 35,
@@ -330,7 +333,7 @@ const bootstrapOscillators = (count = 5, type = 'fm', settings, synth) => {
   });
   nodes.push(osc);
 
-  osc.sync();
+  // osc.sync();
   if (type === 'fm') {
     osc.connect(synth.frequency);
     osc.volume.rampTo(settings.modAmount);
@@ -351,7 +354,7 @@ const bootstrapOscillators = (count = 5, type = 'fm', settings, synth) => {
       type: type === 'fm' ? settings.modType : settings.modTypeAm,
       frequency: 1,
     });
-    node.sync();
+    // node.sync();
     if (type === 'fm') {
       node.volume.rampTo(settings.modAmount);
     }
@@ -370,7 +373,7 @@ const bootstrapSynth = (settings, nodes, outputChannel, analyzer) => {
 
   const channel = new Channel(settings.volume, outputChannel).connect(analyzer);
   synth.connect(channel);
-  synth.sync();
+  // synth.sync();
 
   const amOsc = bootstrapOscillators(5, 'am', settings, synth);
   const fmOsc = bootstrapOscillators(5, 'fm', settings, synth);
@@ -395,8 +398,10 @@ const bootstrapSynth = (settings, nodes, outputChannel, analyzer) => {
       }),
     getAmEEG: () => amOsc.slice(1),
     startAm: () => {
-      amOsc[0].connect(synth.volume);
-      amOsc[0].start();
+      if (amOsc[0].state === 'stopped') {
+        amOsc[0].connect(synth.volume);
+        amOsc[0].start();
+      }
     },
     stopAm: () => {
       amOsc[0].stop();
@@ -418,8 +423,10 @@ const bootstrapSynth = (settings, nodes, outputChannel, analyzer) => {
       }),
     getFmEEG: () => fmOsc.slice(1),
     startFm: () => {
-      fmOsc[0].connect(synth.frequency);
-      fmOsc[0].start();
+      if (fmOsc[0].state === 'stopped') {
+        fmOsc[0].connect(synth.frequency);
+        fmOsc[0].start();
+      }
     },
     stopFm: () => {
       fmOsc[0].stop();
@@ -458,17 +465,17 @@ const bootstrapAudio = () => {
   const pinkNoise = new Noise({
     playbackRate: n.speed,
     type: 'pink',
-    volume: -20,
+    volume: -15,
   });
   const whiteNoise = new Noise({
     playbackRate: n.speed,
     type: 'white',
-    volume: -22,
+    volume: -15,
   });
 
   const filter = new Filter({
     type: 'lowpass',
-    frequency: 700,
+    frequency: 500,
     Q: 1,
   });
   const filter1 = new Filter({
@@ -478,38 +485,46 @@ const bootstrapAudio = () => {
   });
   const filter2 = new Filter({
     type: 'lowpass',
-    frequency: 400,
+    frequency: 300,
     Q: 1,
   });
 
   const lfo = new LFO({
-    frequency: 0.2,
-    min: 700,
-    max: 1100,
+    frequency: 0.1,
+    min: 500,
+    max: 1400,
   });
   const lfo1 = new LFO({
-    frequency: 0.3,
+    frequency: 0.15,
     min: 700,
     max: 1300,
     phase: 90,
   });
+  const fmLFO = new LFO({
+    frequency: 0.00025,
+    min: 300,
+    max: 1100,
+  });
   const lfo2 = new LFO({
-    frequency: 0.1,
-    min: 400,
+    frequency: 0.05,
+    min: 300,
     max: 1100,
     phase: 180,
+    type: 'sine',
   });
+  fmLFO.connect(lfo2.frequency);
+  fmLFO.start();
 
   const noiseChan = new Channel(n.volume).toDestination();
 
   lfo.connect(filter.frequency);
-  lfo.sync();
+  // lfo.sync();
   lfo.start();
   lfo1.connect(filter1.frequency);
-  lfo1.sync();
+  // lfo1.sync();
   lfo1.start();
   lfo2.connect(filter2.frequency);
-  lfo2.sync();
+  // lfo2.sync();
   lfo2.start();
 
   filter.connect(noiseChan);
@@ -533,7 +548,6 @@ const bootstrapAudio = () => {
     analyzer,
   });
   setupNoise(noise.items, get(noiseNodes));
-  Transport.start();
 };
 
 const startNodes = () => {

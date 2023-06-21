@@ -10,7 +10,6 @@ import {
   Switch,
 } from '@mui/material';
 import { useState } from 'react';
-import { Transport } from 'tone';
 
 import {
   contextStarted$,
@@ -50,7 +49,7 @@ const AudioSettings = () => {
                 disabled={!contextStarted}
                 onChange={(e) => {
                   setSchedule(e.target.checked);
-                  Transport.scheduleOnce(() => {
+                  window.setTimeout(() => {
                     left.synth.triggerRelease(releaseTime);
                     right.synth.triggerRelease(releaseTime);
                     defaultPreset.selectedPreset$.set(0);
@@ -64,8 +63,8 @@ const AudioSettings = () => {
                       attackTime,
                       1
                     );
-                  }, '+0');
-                  Transport.scheduleOnce(() => {
+                  }, 0);
+                  window.setTimeout(() => {
                     left.synth.triggerRelease(releaseTime);
                     right.synth.triggerRelease(releaseTime);
                     defaultPreset.selectedPreset$.set(1);
@@ -79,8 +78,8 @@ const AudioSettings = () => {
                       attackTime,
                       1
                     );
-                  }, `+${60 * 10}`);
-                  Transport.scheduleOnce(() => {
+                  }, 60 * 10 * 1000);
+                  window.setTimeout(() => {
                     left.synth.triggerRelease(releaseTime);
                     right.synth.triggerRelease(releaseTime);
                     defaultPreset.selectedPreset$.set(2);
@@ -94,8 +93,8 @@ const AudioSettings = () => {
                       attackTime,
                       1
                     );
-                  }, `+${60 * 20}`);
-                  Transport.scheduleOnce(() => {
+                  }, 60 * 20 * 1000);
+                  window.setTimeout(() => {
                     left.synth.triggerRelease(releaseTime);
                     right.synth.triggerRelease(releaseTime);
                     defaultPreset.selectedPreset$.set(3);
@@ -109,8 +108,8 @@ const AudioSettings = () => {
                       attackTime,
                       1
                     );
-                  }, `+${60 * 30}`);
-                  Transport.scheduleOnce(() => {
+                  }, 60 * 30 * 1000);
+                  window.setTimeout(() => {
                     left.synth.triggerRelease(releaseTime);
                     right.synth.triggerRelease(releaseTime);
                     defaultPreset.selectedPreset$.set(4);
@@ -124,8 +123,8 @@ const AudioSettings = () => {
                       attackTime,
                       1
                     );
-                  }, `+${60 * 40}`);
-                  Transport.scheduleOnce(() => {
+                  }, 60 * 40 * 1000);
+                  window.setTimeout(() => {
                     left.synth.triggerRelease(releaseTime);
                     right.synth.triggerRelease(releaseTime);
                     defaultPreset.selectedPreset$.set(5);
@@ -139,8 +138,8 @@ const AudioSettings = () => {
                       attackTime,
                       1
                     );
-                  }, `+${60 * 50}`);
-                  Transport.scheduleOnce(() => {
+                  }, 60 * 50 * 1000);
+                  window.setTimeout(() => {
                     left.synth.triggerRelease(releaseTime);
                     right.synth.triggerRelease(releaseTime);
                     defaultPreset.selectedPreset$.set(6);
@@ -154,7 +153,7 @@ const AudioSettings = () => {
                       attackTime,
                       1
                     );
-                  }, `+${60 * 60}`);
+                  }, 60 * 60 * 1000);
                 }}
                 inputProps={{ 'aria-label': 'controlled' }}
               />

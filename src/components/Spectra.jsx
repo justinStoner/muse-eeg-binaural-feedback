@@ -75,7 +75,7 @@ const setNodeValues = (nodes, rampTime, channel, debug) => {
       }
       if (Math.ceil(freq.value) !== Math.ceil(freqV)) {
         freq.setRampPoint('+0');
-        freq.rampTo(freqV, rampTime, 0);
+        freq.exponentialApproachValueAtTime(freqV, 0, rampTime);
       }
       if (
         gain.value < 0
@@ -83,7 +83,7 @@ const setNodeValues = (nodes, rampTime, channel, debug) => {
           : Math.ceil(gain.value) !== Math.ceil(gainV)
       ) {
         gain.setRampPoint('+0');
-        gain.rampTo(gainV, rampTime, 0);
+        gain.exponentialApproachValueAtTime(gainV, 0, rampTime);
       }
     }
   });

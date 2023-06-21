@@ -23,6 +23,8 @@ export const SynthChannel = ({
   type,
   modType,
   modTypeAm,
+  modRange,
+  modRangeAm,
   modAmount,
   modAmountAm,
   volume,
@@ -37,6 +39,8 @@ export const SynthChannel = ({
   const modTypeAm$ = atom(modTypeAm);
   const modAmount$ = atom(modAmount);
   const modAmountAm$ = atom(modAmountAm);
+  const modRangeAm$ = atom(modRangeAm);
+  const modRange$ = atom(modRange);
   const volume$ = atom(volume);
   const useAM$ = atom(useAM);
   const useFM$ = atom(useFM);
@@ -53,6 +57,8 @@ export const SynthChannel = ({
       volume: volume$,
       useAM: useAM$,
       useFM: useFM$,
+      modRange: modRange$,
+      modRangeAm: modRangeAm$,
     }),
     items: {
       freq$,
@@ -66,6 +72,8 @@ export const SynthChannel = ({
       volume$,
       useAM$,
       useFM$,
+      modRange$,
+      modRangeAm$,
     },
   };
 };
