@@ -4,7 +4,7 @@ import { useTransition } from 'react';
 import { useRef } from 'react';
 import { Channel, OfflineContext, Oscillator, ToneAudioBuffer } from 'tone';
 
-import { leftChannel, noiseNodes, rightChannel } from '../../store';
+import { leftChannel, leftNodes, rightChannel } from '../../store';
 import { useUnwrap } from '../../store/audio';
 import OfflineVisualization from '../Visual/OfflineVisualization';
 
@@ -31,7 +31,7 @@ const ChannelVisual = ({ name, buffer, channel }) => {
 export const OutputVisual = ({ name }) => {
   //const [, startTransition] = useTransition();
   const [buff, setBuffer] = useState([]);
-  const analyzer = useUnwrap(noiseNodes).analyzer;
+  const analyzer = useUnwrap(leftNodes).analyzer;
   const animId = useRef(0);
   const previousDelta = useRef(0);
   const fpsLimit = useRef(10);

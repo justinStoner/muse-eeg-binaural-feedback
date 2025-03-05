@@ -23,8 +23,6 @@ export const SynthChannel = ({
   type,
   modType,
   modTypeAm,
-  modRange,
-  modRangeAm,
   modAmount,
   modAmountAm,
   volume,
@@ -39,8 +37,6 @@ export const SynthChannel = ({
   const modTypeAm$ = atom(modTypeAm);
   const modAmount$ = atom(modAmount);
   const modAmountAm$ = atom(modAmountAm);
-  const modRangeAm$ = atom(modRangeAm);
-  const modRange$ = atom(modRange);
   const volume$ = atom(volume);
   const useAM$ = atom(useAM);
   const useFM$ = atom(useFM);
@@ -57,8 +53,6 @@ export const SynthChannel = ({
       volume: volume$,
       useAM: useAM$,
       useFM: useFM$,
-      modRange: modRange$,
-      modRangeAm: modRangeAm$,
     }),
     items: {
       freq$,
@@ -72,26 +66,155 @@ export const SynthChannel = ({
       volume$,
       useAM$,
       useFM$,
-      modRange$,
-      modRangeAm$,
     },
   };
 };
 
-export const NoiseChannel = ({ on, speed, volume }) => {
+export const NoiseChannel = ({
+  on,
+  speed,
+  volume,
+  lfo1Freq,
+  lfo1Min,
+  lfo1Max,
+  lfo1Phase,
+  lfo2Freq,
+  lfo2Min,
+  lfo2Max,
+  lfo2Phase,
+  lfo3Freq,
+  lfo3Min,
+  lfo3Max,
+  lfo3Phase,
+
+  filter1Q,
+  filter1Gain,
+
+  filter2Q,
+  filter2Gain,
+
+  filter3Q,
+  filter3Gain,
+
+  chorusFreq,
+  chorusDelay,
+  chorusDepth,
+  chorusSpread,
+  chorusFeedback,
+
+  reverbDecay,
+  reverbWet,
+}) => {
   const on$ = atom(on);
   const speed$ = atom(speed);
   const volume$ = atom(volume);
+
+  const lfo1Freq$ = atom(lfo1Freq);
+  const lfo1Min$ = atom(lfo1Min);
+  const lfo1Max$ = atom(lfo1Max);
+  const lfo1Phase$ = atom(lfo1Phase);
+
+  const lfo2Freq$ = atom(lfo2Freq);
+  const lfo2Min$ = atom(lfo2Min);
+  const lfo2Max$ = atom(lfo2Max);
+  const lfo2Phase$ = atom(lfo2Phase);
+
+  const lfo3Freq$ = atom(lfo3Freq);
+  const lfo3Min$ = atom(lfo3Min);
+  const lfo3Max$ = atom(lfo3Max);
+  const lfo3Phase$ = atom(lfo3Phase);
+
+  const filter1Q$ = atom(filter1Q);
+  const filter1Gain$ = atom(filter1Gain);
+
+  const filter2Q$ = atom(filter2Q);
+  const filter2Gain$ = atom(filter2Gain);
+
+  const filter3Q$ = atom(filter3Q);
+  const filter3Gain$ = atom(filter3Gain);
+
+  const chorusFreq$ = atom(chorusFreq);
+  const chorusDelay$ = atom(chorusDelay);
+  const chorusDepth$ = atom(chorusDepth);
+  const chorusSpread$ = atom(chorusSpread);
+  const chorusFeedback$ = atom(chorusFeedback);
+
+  const reverbDecay$ = atom(reverbDecay);
+  const reverbWet$ = atom(reverbWet);
+
   return {
     state: combine({
       on: on$,
       speed: speed$,
       volume: volume$,
+
+      lfo1Freq: lfo1Freq$,
+      lfo1Min: lfo1Min$,
+      lfo1Max: lfo1Max$,
+      lfo1Phase: lfo1Phase$,
+
+      lfo2Freq: lfo2Freq$,
+      lfo2Min: lfo2Min$,
+      lfo2Max: lfo2Max$,
+      lfo2Phase: lfo2Phase$,
+
+      lfo3Freq: lfo3Freq$,
+      lfo3Min: lfo3Min$,
+      lfo3Max: lfo3Max$,
+      lfo3Phase: lfo3Phase$,
+
+      filter1Q: filter1Q$,
+      filter1Gain: filter1Gain$,
+
+      filter2Q: filter2Q$,
+      filter2Gain: filter2Gain$,
+
+      filter3Q: filter3Q$,
+      filter3Gain: filter3Gain$,
+
+      chorusFreq: chorusFreq$,
+      chorusDelay: chorusDelay$,
+      chorusDepth: chorusDepth$,
+      chorusFeedback: chorusFeedback$,
+      chorusSpread: chorusSpread$,
+      reverbDecay: reverbDecay$,
+      reverbWet: reverbWet$,
     }),
     items: {
       on$,
       speed$,
       volume$,
+      lfo1Freq$,
+      lfo1Min$,
+      lfo1Max$,
+      lfo1Phase$,
+
+      lfo2Freq$,
+      lfo2Min$,
+      lfo2Max$,
+      lfo2Phase$,
+
+      lfo3Freq$,
+      lfo3Min$,
+      lfo3Max$,
+      lfo3Phase$,
+
+      filter1Q$,
+      filter1Gain$,
+
+      filter2Q$,
+      filter2Gain$,
+
+      filter3Q$,
+      filter3Gain$,
+
+      chorusFreq$,
+      chorusDelay$,
+      chorusDepth$,
+      chorusFeedback$,
+      chorusSpread$,
+      reverbDecay$,
+      reverbWet$,
     },
   };
 };

@@ -15,6 +15,7 @@ import {
   contextStarted$,
   leftChannel,
   leftNodes,
+  outputVisual$,
   rightChannel,
   rightNodes,
 } from '../../store';
@@ -196,7 +197,10 @@ const AudioSettings = () => {
         <Visual />
       </CollapsePane>
       <Divider />
-      <CollapsePane label="Realtime waveform">
+      <CollapsePane
+        label="Realtime waveform"
+        onChange={(val) => outputVisual$.set(val)}
+      >
         {contextStarted && <OutputVisual name="Output" />}
       </CollapsePane>
     </CollapseCard>

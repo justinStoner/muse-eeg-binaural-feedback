@@ -5,9 +5,7 @@ export default defineConfig(() => {
   return {
     build: {
       outDir: 'build',
-      lib: {
-        formats: ['es', 'umd'],
-      },
+      manifest: 'asset-manifest.json',
     },
     plugins: [react()],
   };

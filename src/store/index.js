@@ -1,20 +1,13 @@
 import { atom, combine, get } from '@hungry-egg/rx-state';
 import { skip } from 'rxjs/operators';
-import {
-  Analyser,
-  Channel,
-  Filter,
-  LFO,
-  Noise,
-  Oscillator,
-  start,
-  Synth,
-} from 'tone';
+import { start } from 'tone';
 
 const LEFT_CHANNEL = -1;
 const RIGHT_CHANNEL = 1;
 
-import { updateNodes } from '../components/Spectra';
+import { updateNodes } from '../EEG/audio';
+import BinauralSynth from '../synth/binaural';
+import NoiseSynth from '../synth/noise';
 import { AudioNodes, defaultPreset, NoiseChannel, SynthChannel } from './audio';
 
 const leftChannel = SynthChannel({
@@ -26,8 +19,6 @@ const leftChannel = SynthChannel({
   modTypeAm: 'sine',
   modAmount: 14,
   modAmountAm: -10,
-  modRange: 7.51,
-  modRangeAm: 7.51,
   volume: 0,
   useAM: false,
   useFM: true,
@@ -42,8 +33,6 @@ const rightChannel = SynthChannel({
   modTypeAm: 'sine',
   modAmount: 14,
   modAmountAm: -10,
-  modRange: 7.51,
-  modRangeAm: 7.51,
   volume: 0,
   useAM: false,
   useFM: true,
@@ -51,8 +40,39 @@ const rightChannel = SynthChannel({
 
 const noise = NoiseChannel({
   on: false,
-  volume: -5,
+  volume: -36,
   speed: 1,
+
+  lfo1Freq: 0.1,
+  lfo1Min: 350,
+  lfo1Max: 1350,
+  lfo1Phase: 0,
+  lfo2Freq: 0.15,
+  lfo2Min: 1000,
+  lfo2Max: 2000,
+  lfo2Phase: 0,
+  lfo3Freq: 0.05,
+  lfo3Min: 350,
+  lfo3Max: 2000,
+  lfo3Phase: 180,
+
+  filter1Q: 1,
+  filter1Gain: 0.75,
+
+  filter2Q: 1,
+  filter2Gain: 0.75,
+
+  filter3Q: 1,
+  filter3Gain: 0.75,
+
+  chorusDelay: 200,
+  chorusFeedback: 0,
+  chorusDepth: 0.5,
+  chorusFreq: 0.05,
+  chorusSpread: 90,
+
+  reverbDecay: 6,
+  reverbWet: 1,
 });
 
 const AUDIO_STATE = {
@@ -67,6 +87,9 @@ const feedbackMode$ = atom(0);
 
 const audioState$ = atom(AUDIO_STATE.stopped);
 const contextStarted$ = atom(false);
+
+const outputVisual$ = atom(false);
+
 const SpectraSettings = ({
   cutOffLow = 1,
   cutOffHigh = 35,
@@ -134,172 +157,6 @@ const brainwaveCoeffecients = {
   items$: brainwaveCfx,
 };
 
-const setupSynth = (channel, nodes, channelMode) => {
-  channel.freq$.subscribe((v) => {
-    if (typeof v === 'number') {
-      nodes.synth.frequency.rampTo(v, 0, '+0');
-    }
-  });
-  channel.modFreq$.subscribe((v) => {
-    if (typeof v === 'number') {
-      nodes.fmOsc[0].frequency.rampTo(v, 0.5, '+0');
-    }
-  });
-  channel.modFreqAm$.subscribe((v) => {
-    if (typeof v === 'number') {
-      nodes.amOsc[0].frequency.rampTo(v, 0.5, '+0');
-    }
-  });
-  channel.type$.subscribe((v) => {
-    if (v) {
-      nodes.synth.oscillator.type = v;
-    }
-  });
-  channel.modType$.subscribe((v) => {
-    if (v) {
-      nodes.fmOsc.forEach((n) => (n.type = v));
-    }
-  });
-  channel.modTypeAm$.subscribe((v) => {
-    if (v) {
-      nodes.amOsc.forEach((n) => (n.type = v));
-    }
-  });
-  channel.modAmount$.subscribe((v) => {
-    if (typeof v === 'number') {
-      nodes.fmOsc.slice(0, 1).forEach((n) => n.volume.rampTo(v, 0.5, '+0'));
-    }
-  });
-  channel.modAmountAm$.subscribe((v) => {
-    if (typeof v === 'number') {
-      nodes.amOsc.slice(0, 1).forEach((n) => n.volume.rampTo(v, 0.5, '+0'));
-    }
-  });
-  channel.volume$.subscribe((v) => {
-    if (typeof v === 'number') {
-      nodes.channel.volume.rampTo(v, 0.5, '+0');
-    }
-  });
-  channel.useAM$.subscribe((v) => {
-    const eeg = get(eegStateReady$);
-    const mode = get(feedbackMode$);
-    const amt = get(channel.modAmountAm$);
-    if (v) {
-      if (eeg) {
-        if (
-          channelMode === RIGHT_CHANNEL ||
-          (channelMode === LEFT_CHANNEL && mode > 0)
-        ) {
-          nodes.startAmEEG();
-        } else if (channelMode === LEFT_CHANNEL && mode === 0) {
-          nodes.startAm();
-          nodes.amOsc[0].volume.rampTo(amt, 0.5, '+0');
-        }
-      } else {
-        nodes.startAm();
-        nodes.amOsc[0].volume.rampTo(amt, 0.5, '+0');
-      }
-    } else {
-      nodes.stopAm();
-      nodes.stopAmEEG();
-    }
-  });
-  channel.useFM$.subscribe((v) => {
-    const eeg = get(eegStateReady$);
-    const mode = get(feedbackMode$);
-    const amt = get(channel.modAmount$);
-    if (v) {
-      if (eeg) {
-        if (
-          channelMode === RIGHT_CHANNEL ||
-          (channelMode === LEFT_CHANNEL && mode > 0)
-        ) {
-          nodes.startFmEEG();
-        } else if (channelMode === LEFT_CHANNEL && mode === 0) {
-          nodes.startFm();
-          nodes.fmOsc[0].volume.rampTo(amt, 0.5, '+0');
-        }
-      } else {
-        nodes.startFm();
-        nodes.fmOsc[0].volume.rampTo(amt, 0.5, '+0');
-      }
-    } else {
-      nodes.stopFm();
-      nodes.stopFmEEG();
-    }
-  });
-  feedbackMode$.subscribe((v) => {
-    const am = get(channel.useAM$);
-    const fm = get(channel.useFM$);
-    if (v === 0 && channelMode === LEFT_CHANNEL) {
-      nodes.amOsc[0].set({ frequency: get(channel.modFreqAm$) });
-      nodes.amOsc[0].volume.rampTo(get(channel.modAmountAm$), 0.5, '+0');
-      nodes.fmOsc[0].set({ frequency: get(channel.modFreq$) });
-      nodes.fmOsc[0].volume.rampTo(get(channel.modAmount$), 0.5, '+0');
-      if (am) {
-        nodes.stopAmEEG();
-      }
-      if (fm) {
-        nodes.stopFmEEG();
-      }
-    }
-    if (v > 0 && channelMode === LEFT_CHANNEL) {
-      if (am) {
-        nodes.startAm();
-        nodes.startAmEEG();
-      }
-      if (fm) {
-        nodes.startFm();
-        nodes.startFmEEG();
-      }
-    }
-  });
-};
-
-const setupNoise = (channel, nodes) => {
-  channel.volume$.subscribe((v) => {
-    if (typeof v === 'number') {
-      nodes.noiseChan.volume.rampTo(v, 0.5, '+0');
-    }
-  });
-  channel.speed$.subscribe((v) => {
-    if (typeof v === 'number') {
-      nodes.noise.set({ playbackRate: v });
-      nodes.pinkNoise.set({ playbackRate: v });
-      nodes.whiteNoise.set({ playbackRate: v });
-    }
-  });
-  channel.on$.subscribe((v) => {
-    const audioState = get(audioState$);
-    const contextState = get(contextStarted$);
-    if (
-      !v &&
-      nodes.noise.state === 'started' &&
-      audioState === AUDIO_STATE.started &&
-      contextState
-    ) {
-      nodes.noise.stop();
-      nodes.pinkNoise.stop();
-      nodes.whiteNoise.stop();
-      nodes.lfo.stop();
-      nodes.lfo1.stop();
-      nodes.lfo2.stop();
-    } else if (
-      v &&
-      nodes.noise.state === 'stopped' &&
-      audioState === AUDIO_STATE.started &&
-      contextState
-    ) {
-      nodes.noise.start();
-      nodes.pinkNoise.start();
-      nodes.whiteNoise.start();
-      nodes.lfo.start();
-      nodes.lfo1.start();
-      nodes.lfo2.start();
-    }
-  });
-};
-
 const setupPresets = (preset, channelL, channelR) => {
   preset.selectedPreset$.pipe(skip(1)).subscribe((v) => {
     if (v > -1) {
@@ -325,250 +182,29 @@ const setupPresets = (preset, channelL, channelR) => {
   });
 };
 
-const bootstrapOscillators = (count = 5, type = 'fm', settings, synth) => {
-  const nodes = [];
-  const osc = new Oscillator({
-    type: type === 'fm' ? settings.modType : settings.modTypeAm,
-    frequency: type === 'fm' ? settings.modFreq : settings.modFreqAm,
-  });
-  nodes.push(osc);
-
-  // osc.sync();
-  if (type === 'fm') {
-    osc.connect(synth.frequency);
-    osc.volume.rampTo(settings.modAmount);
-    if (settings.useFM) {
-      osc.start();
-    }
-  }
-  if (type === 'am') {
-    osc.connect(synth.volume);
-    osc.volume.rampTo(settings.modAmountAm);
-    if (settings.useAM) {
-      osc.start();
-    }
-  }
-
-  for (let i = 0; i < count; i++) {
-    const node = new Oscillator({
-      type: type === 'fm' ? settings.modType : settings.modTypeAm,
-      frequency: 1,
-    });
-    // node.sync();
-    if (type === 'fm') {
-      node.volume.rampTo(settings.modAmount);
-    }
-    if (type === 'am') {
-      node.volume.rampTo(settings.modAmountAm);
-    }
-    nodes.push(node);
-  }
-  return nodes;
-};
-
-const bootstrapSynth = (settings, nodes, outputChannel, analyzer) => {
-  const synth = new Synth({
-    oscillator: { type: settings.type },
-  });
-
-  const channel = new Channel(settings.volume, outputChannel).connect(analyzer);
-  synth.connect(channel);
-  // synth.sync();
-
-  const amOsc = bootstrapOscillators(5, 'am', settings, synth);
-  const fmOsc = bootstrapOscillators(5, 'fm', settings, synth);
-
-  nodes.set({
-    synth,
-    channel,
-    amOsc,
-    startAmEEG: () =>
-      amOsc.slice(1).forEach((o) => {
-        console.log(o);
-        if (o.state === 'stopped') {
-          o.connect(synth.volume);
-          o.start();
-          o.volume.rampTo(settings.modAmountAm);
-        }
-      }),
-    stopAmEEG: () =>
-      amOsc.slice(1).forEach((o) => {
-        o.disconnect(synth.volume);
-        o.stop();
-      }),
-    getAmEEG: () => amOsc.slice(1),
-    startAm: () => {
-      if (amOsc[0].state === 'stopped') {
-        amOsc[0].connect(synth.volume);
-        amOsc[0].start();
-      }
-    },
-    stopAm: () => {
-      amOsc[0].stop();
-      amOsc[0].disconnect(synth.volume);
-    },
-    fmOsc,
-    startFmEEG: () =>
-      fmOsc.slice(1).forEach((o) => {
-        if (o.state === 'stopped') {
-          o.connect(synth.frequency);
-          o.start();
-          o.volume.rampTo(settings.modAmount);
-        }
-      }),
-    stopFmEEG: () =>
-      fmOsc.slice(1).forEach((o) => {
-        o.disconnect(synth.frequency);
-        o.stop();
-      }),
-    getFmEEG: () => fmOsc.slice(1),
-    startFm: () => {
-      if (fmOsc[0].state === 'stopped') {
-        fmOsc[0].connect(synth.frequency);
-        fmOsc[0].start();
-      }
-    },
-    stopFm: () => {
-      fmOsc[0].stop();
-      fmOsc[0].disconnect(synth.frequency);
-    },
-  });
-};
-
 const createContext = () => {
   return start();
 };
 
 const bootstrapAudio = () => {
-  const analyzer = new Analyser({
-    type: 'waveform',
-    channels: 2,
-    size: 4096,
-  }).toDestination();
-  const left = get(leftChannel.state);
-  bootstrapSynth(left, leftNodes, LEFT_CHANNEL, analyzer);
-  setupSynth(leftChannel.items, get(leftNodes), LEFT_CHANNEL);
-
-  const right = get(rightChannel.state);
-  bootstrapSynth(right, rightNodes, RIGHT_CHANNEL, analyzer);
-  setupSynth(rightChannel.items, get(rightNodes), RIGHT_CHANNEL);
+  BinauralSynth.init();
 
   setupPresets(defaultPreset, leftChannel.items, rightChannel.items);
 
-  const n = get(noise.state);
-
-  const noiseNode = new Noise({
-    playbackRate: n.speed,
-    type: 'brown',
-    volume: -15,
-  });
-  const pinkNoise = new Noise({
-    playbackRate: n.speed,
-    type: 'pink',
-    volume: -15,
-  });
-  const whiteNoise = new Noise({
-    playbackRate: n.speed,
-    type: 'white',
-    volume: -15,
-  });
-
-  const filter = new Filter({
-    type: 'lowpass',
-    frequency: 500,
-    Q: 1,
-  });
-  const filter1 = new Filter({
-    type: 'lowpass',
-    frequency: 700,
-    Q: 1,
-  });
-  const filter2 = new Filter({
-    type: 'lowpass',
-    frequency: 300,
-    Q: 1,
-  });
-
-  const lfo = new LFO({
-    frequency: 0.1,
-    min: 500,
-    max: 1400,
-  });
-  const lfo1 = new LFO({
-    frequency: 0.15,
-    min: 700,
-    max: 1300,
-    phase: 90,
-  });
-  const fmLFO = new LFO({
-    frequency: 0.00025,
-    min: 300,
-    max: 1100,
-  });
-  const lfo2 = new LFO({
-    frequency: 0.05,
-    min: 300,
-    max: 1100,
-    phase: 180,
-    type: 'sine',
-  });
-  fmLFO.connect(lfo2.frequency);
-  fmLFO.start();
-
-  const noiseChan = new Channel(n.volume).toDestination();
-
-  lfo.connect(filter.frequency);
-  // lfo.sync();
-  lfo.start();
-  lfo1.connect(filter1.frequency);
-  // lfo1.sync();
-  lfo1.start();
-  lfo2.connect(filter2.frequency);
-  // lfo2.sync();
-  lfo2.start();
-
-  filter.connect(noiseChan);
-  filter1.connect(noiseChan);
-  filter2.connect(noiseChan);
-
-  pinkNoise.fan(filter, filter1, filter2);
-  whiteNoise.fan(filter, filter1, filter2);
-  noiseNode.fan(filter, filter1, filter2);
-  noiseNodes.set({
-    noise: noiseNode,
-    pinkNoise,
-    whiteNoise,
-    filter,
-    filter1,
-    filter2,
-    lfo,
-    lfo1,
-    lfo2,
-    noiseChan,
-    analyzer,
-  });
-  setupNoise(noise.items, get(noiseNodes));
+  NoiseSynth({
+    settings: noise.state,
+  }).initNoise();
 };
 
 const startNodes = () => {
-  const left = get(leftNodes);
-  const right = get(rightNodes);
-  const noiseN = get(noiseNodes);
+  const n = get(noiseNodes);
+  const ns = get(noise.state);
 
-  const leftSettings = get(leftChannel.state);
-  const rightSettings = get(rightChannel.state);
-  const noiseSettings = get(noise.state);
-  if (noiseSettings.on) {
-    noiseN.noise.start();
-    noiseN.pinkNoise.start();
-    noiseN.whiteNoise.start();
-    noiseN.lfo.start();
-    noiseN.lfo1.start();
-    noiseN.lfo2.start();
+  if (ns.on) {
+    n.start();
   }
 
-  left.synth.triggerAttack(leftSettings.freq, '+0', 1);
-  right.synth.triggerAttack(rightSettings.freq, '+0', 1);
+  BinauralSynth.start();
 };
 
 const startEEGNodes = () => {
@@ -621,22 +257,7 @@ const stopNodes = () => {
   left.synth.triggerRelease('+0.5');
   right.synth.triggerRelease('+0.5');
 
-  n.noise.stop();
-  n.pinkNoise.stop();
-  n.whiteNoise.stop();
-  n.lfo2.stop();
-  n.lfo1.stop();
-  n.lfo2.stop();
-
-  left.stopAm();
-  left.stopFm();
-  left.stopAmEEG();
-  left.stopFmEEG();
-
-  right.stopAm();
-  right.stopFm();
-  right.stopAmEEG();
-  right.stopFmEEG();
+  n.stop();
 };
 
 const eegStateReady$ = atom(false);
@@ -659,6 +280,7 @@ export {
   leftNodes,
   noise,
   noiseNodes,
+  outputVisual$,
   RIGHT_CHANNEL,
   rightChannel,
   rightNodes,

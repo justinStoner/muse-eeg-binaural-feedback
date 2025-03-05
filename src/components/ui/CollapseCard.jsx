@@ -12,7 +12,7 @@ import {
   Switch,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const CollapseCard = ({
   title,
@@ -62,8 +62,13 @@ const CollapseCard = ({
   );
 };
 
-export const CollapsePane = ({ children, label }) => {
+export const CollapsePane = ({ children, label, onChange }) => {
   const [showPane, setShowPane] = useState(false);
+  useEffect(() => {
+    if (onChange) {
+      onChange(showPane);
+    }
+  }, [showPane]);
   return (
     <Grid container item>
       <Grid item xs={8}>

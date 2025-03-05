@@ -1,7 +1,7 @@
-import { customCount } from './chartUtils';
+import { from, interval } from 'rxjs';
+import { flatMap, map } from 'rxjs/operators';
 
-const { interval, from } = require('rxjs');
-const { map, flatMap } = require('rxjs/operators');
+import { customCount } from './chartUtils';
 
 const samples = () => {
   return Array(12)

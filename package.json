@@ -10,7 +10,7 @@
     "@hungry-egg/rx-state": "^1.0.3",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.13.2",
-    "@neurosity/pipes": "^3.0.2",
+    "@neurosity/pipes": "^4.3.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
@@ -27,7 +27,7 @@
     "react-p5-wrapper": "^2.0.0",
     "react-plotly.js": "^2.6.0",
     "react-scripts": "5.0.1",
-    "rxjs": "^6.5.3",
+    "rxjs": "^7.8.1",
     "tone": "14.7.77",
     "web-vitals": "^2.1.0",
     "workbox-background-sync": "^6.4.2",
@@ -44,6 +44,7 @@
     "workbox-streams": "^6.4.2"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.1",
     "buffer": "npm:buffer@^6.0.3",
     "crypto": "npm:crypto-browserify@^3.12.0",
     "eslint-config-prettier": "^8.5.0",
@@ -63,13 +64,16 @@
     "prettier": "^2.7.1",
     "stream": "npm:stream-browserify@^3.0.0",
     "util": "npm:util@^0.12.5",
+    "vite": "^4.3.9",
     "zlib": "npm:browserify-zlib@^0.2.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "dev": "vite",
+    "vite-build": "vite build"
   },
   "browserslist": {
     "production": [

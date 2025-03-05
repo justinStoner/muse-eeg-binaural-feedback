@@ -37,8 +37,6 @@ const SynthPane = ({ channel, name }) => {
     modFreqAm$,
     useAM$,
     useFM$,
-    modRange$,
-    modRangeAm$,
   } = channel.items;
   const volume = useUnwrap(volume$);
   const modAmount = useUnwrap(modAmount$);
@@ -48,8 +46,6 @@ const SynthPane = ({ channel, name }) => {
   const modTypeAm = useUnwrap(modTypeAm$);
   const modFreq = useUnwrap(modFreq$);
   const modFreqAm = useUnwrap(modFreqAm$);
-  const modRange = useUnwrap(modRange$);
-  const modRangeAm = useUnwrap(modRangeAm$);
   const freq = useUnwrap(freq$);
   const useAM = useUnwrap(useAM$);
   const useFM = useUnwrap(useFM$);
@@ -197,8 +193,8 @@ const SynthPane = ({ channel, name }) => {
               label="Vol.:"
               xs={12}
               value={modAmount}
-              inputRange={{ step: 1, min: -40, max: 30 }}
-              range={{ step: 1, min: -40, max: 30 }}
+              inputRange={{ step: 1, min: 0, max: 100 }}
+              range={{ step: 1, min: 0, max: 100 }}
               onChange={(e) =>
                 handleSliderChange(Number(e.target.value), (v) =>
                   modAmount$.set(v)
@@ -206,21 +202,6 @@ const SynthPane = ({ channel, name }) => {
               }
               onSliderChange={(e, v) =>
                 handleSliderChange(Number(v), (val) => modAmount$.set(val))
-              }
-            />
-            <SliderInput
-              label="Mod range.:"
-              xs={12}
-              value={modRange}
-              inputRange={{ step: 1, min: 0, max: freq }}
-              range={{ step: 1, min: 0, max: freq }}
-              onChange={(e) =>
-                handleSliderChange(Number(e.target.value), (v) =>
-                  modRange$.set(v)
-                )
-              }
-              onSliderChange={(e, v) =>
-                handleSliderChange(Number(v), (val) => modRange$.set(val))
               }
             />
           </Grid>
@@ -302,21 +283,6 @@ const SynthPane = ({ channel, name }) => {
               }
               onSliderChange={(e, v) =>
                 handleSliderChange(Number(v), (val) => modAmountAm$.set(val))
-              }
-            />
-            <SliderInput
-              label="Mod range.:"
-              xs={12}
-              value={modRangeAm}
-              inputRange={{ step: 1, min: 0, max: freq }}
-              range={{ step: 1, min: 0, max: freq }}
-              onChange={(e) =>
-                handleSliderChange(Number(e.target.value), (v) =>
-                  modRangeAm$.set(v)
-                )
-              }
-              onSliderChange={(e, v) =>
-                handleSliderChange(Number(v), (val) => modRangeAm$.set(val))
               }
             />
           </Grid>

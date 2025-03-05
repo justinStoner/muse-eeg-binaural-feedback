@@ -29,6 +29,7 @@ module.exports = {
         endOfLine: 'auto',
       },
     ],
+    'no-undef': 'warn', // Allow undefined variables
     'react/prop-types': 'off',
     'react/destructuring-assignment': 'off', // Vscode doesn't support automatically destructuring, it's a pain to add a new variable
     'react/require-default-props': 'off', // Allow non-defined react props as undefined
